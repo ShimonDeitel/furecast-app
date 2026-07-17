@@ -1,0 +1,53 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "FURECAST_STOREKIT_CONFIG",
+  "nonRenewingSubscriptions" : [],
+  "products" : [],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "22700001",
+      "localizations" : [],
+      "name" : "Furecast Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "3.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "furecast_pro_monthly_id",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Breed cost prediction, AI surprise-risk coaching, surprise jar, and predict-vs-actual reports.",
+              "displayName" : "Furecast Pro",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.shimondeitel.furecast.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Furecast Pro Monthly",
+          "subscriptionGroupID" : "22700001",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

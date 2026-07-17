@@ -1,0 +1,22 @@
+# Xcode / build artifacts
+DerivedData/
+build/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+.build/
+*.moved-aside
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Xcodegen-generated project (regenerate from project.yml)
+iOS/Furecast.xcodeproj/
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.swiftpm/
+Packages/
+Package.resolved
