@@ -1,0 +1,1 @@
+dog,cat,puppy,kitten,breed,budget,expense,tracker,vet,adoption,spending,bills,predict,ownership
