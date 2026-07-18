@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Furecast — Pet Cost Predictor</title>
+<meta name="description" content="See a breed-specific true cost of ownership before you adopt, then track it against what actually happens.">
+<style>
+  :root {
+    --canvas: #F1F5EA;
+    --panel: #FCFDF8;
+    --ink: #25332A;
+    --ink-muted: #687568;
+    --hairline: #DFE7D6;
+    --coral: #FF7A5C;
+    --coral-deep: #DE5B3E;
+    --sage: #6E9C74;
+    --sage-deep: #4C7A52;
+    --amber: #E3A23A;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: ui-rounded, -apple-system, BlinkMacSystemFont, "SF Pro Rounded", "Segoe UI", sans-serif;
+    overflow-x: hidden;
+  }
+  a { color: var(--coral-deep); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+  /* --- floating paw prints background --- */
+  .paw-field { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .paw-field svg { position: absolute; opacity: 0.10; animation: floaty 14s ease-in-out infinite; }
+  @keyframes floaty {
+    0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+    50% { transform: translateY(-22px) rotate(var(--r, 0deg)); }
+  }
+
+  header { position: relative; z-index: 1; padding: 64px 0 20px; text-align: center; }
+  .logo-mark { width: 78px; height: 78px; margin: 0 auto 18px; display: block; }
+  h1 { font-size: clamp(34px, 6vw, 52px); margin: 0 0 10px; font-weight: 800; }
+  .tagline { font-size: 19px; color: var(--ink-muted); max-width: 520px; margin: 0 auto; }
+
+  section { position: relative; z-index: 1; padding: 46px 0; }
+
+  /* --- piggy bank hero demo --- */
+  .demo-row { display: flex; gap: 40px; align-items: center; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
+  .piggy-shell {
+    width: 200px; height: 250px; position: relative;
+  }
+  .piggy-outline {
+    position: absolute; inset: 0;
+    border-radius: 42% 42% 46% 46% / 34% 34% 30% 30%;
+    border: 2px dashed rgba(110,156,116,0.55);
+  }
+  .piggy-ear {
+    position: absolute; top: -8px; width: 30%; height: 26%;
+    background: transparent; border-radius: 50%;
+    border: 2px dashed rgba(110,156,116,0.55);
+  }
+  .piggy-ear.left { left: 8%; }
+  .piggy-ear.right { right: 8%; }
+  .piggy-fill-mask {
+    position: absolute; inset: 0;
+    border-radius: 42% 42% 46% 46% / 34% 34% 30% 30%;
+    overflow: hidden;
+  }
+  .piggy-fill {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 20%;
+    background: linear-gradient(180deg, var(--coral), var(--coral-deep));
+    animation: fillrise 6s ease-in-out infinite;
+  }
+  @keyframes fillrise {
+    0%   { height: 8%; }
+    45%  { height: 68%; }
+    70%  { height: 46%; }
+    100% { height: 8%; }
+  }
+  .piggy-line {
+    position: absolute; left: -6px; right: -6px; height: 3px;
+    background: var(--sage-deep); border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+    animation: linerise 6s ease-in-out infinite;
+  }
+  @keyframes linerise {
+    0%   { bottom: 14%; }
+    50%  { bottom: 50%; }
+    100% { bottom: 14%; }
+  }
+  .demo-caption { max-width: 300px; }
+  .demo-caption h3 { margin-top: 0; font-size: 21px; }
+  .demo-caption p { color: var(--ink-muted); line-height: 1.55; }
+
+  .blob-card {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 40px 26px 44px 24px / 38px 28px 40px 26px;
+    padding: 30px 32px;
+  }
+
+  h2 { font-size: 28px; margin-bottom: 6px; }
+  .subhead { color: var(--ink-muted); margin-top: 0; margin-bottom: 30px; max-width: 560px; }
+
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+  .step {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 36px 22px 40px 20px / 34px 24px 36px 22px;
+    padding: 24px;
+  }
+  .step .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--coral); color: white; font-weight: 700; margin-bottom: 12px;
+  }
+  .step h4 { margin: 0 0 8px; font-size: 17px; }
+  .step p { margin: 0; color: var(--ink-muted); font-size: 14.5px; line-height: 1.5; }
+
+  .jar-row { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .jar-icon { flex: 0 0 auto; }
+  .jar-icon svg { width: 96px; height: 96px; }
+  .jar-text { flex: 1 1 320px; }
+  .jar-text p { color: var(--ink-muted); line-height: 1.6; }
+  .risk-chip {
+    display: inline-block; background: rgba(227,162,58,0.15); color: var(--amber);
+    border: 1px solid rgba(227,162,58,0.4);
+    padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; margin: 4px 6px 0 0;
+  }
+
+  .pricing { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+  .price-card {
+    flex: 1 1 260px; max-width: 320px;
+    background: var(--panel); border: 1px solid var(--hairline);
+    border-radius: 40px 24px 44px 22px / 36px 26px 38px 24px;
+    padding: 28px;
+  }
+  .price-card.pro { border: 2px solid var(--coral); }
+  .price-card h3 { margin: 0 0 4px; font-size: 21px; }
+  .price-card .price { font-size: 30px; font-weight: 800; margin: 10px 0; }
+  .price-card .price span { font-size: 15px; font-weight: 500; color: var(--ink-muted); }
+  .price-card ul { padding-left: 18px; color: var(--ink-muted); line-height: 1.7; font-size: 14.5px; }
+
+  footer { text-align: center; padding: 50px 0 70px; color: var(--ink-muted); font-size: 14px; position: relative; z-index: 1; }
+  footer a { margin: 0 10px; }
+
+  @media (max-width: 640px) {
+    .demo-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="paw-field" id="pawField"></div>
+
+<header>
+  <div class="wrap">
+    <svg class="logo-mark" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="200" height="200" rx="46" fill="#6E9C74"/>
+      <ellipse cx="100" cy="128" rx="60" ry="40" fill="#FF7A5C"/>
+      <ellipse cx="47" cy="60" rx="16" ry="19" fill="#FF7A5C"/>
+      <ellipse cx="91" cy="46" rx="19" ry="24" fill="#FF7A5C"/>
+      <ellipse cx="131" cy="46" rx="19" ry="24" fill="#FF7A5C"/>
+      <ellipse cx="167" cy="60" rx="16" ry="19" fill="#FF7A5C"/>
+    </svg>
+    <h1>Furecast</h1>
+    <p class="tagline">Know the true cost of a breed before you adopt — then watch how the real numbers compare, month by month.</p>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="demo-row">
+      <div class="piggy-shell">
+        <div class="piggy-ear left"></div>
+        <div class="piggy-ear right"></div>
+        <div class="piggy-outline"></div>
+        <div class="piggy-fill-mask">
+          <div class="piggy-fill"></div>
+          <div class="piggy-line"></div>
+        </div>
+      </div>
+      <div class="demo-caption">
+        <h3>Watch the prediction get tested</h3>
+        <p>The coral fill is what you've actually spent. The thin line is where Furecast expected you to be by now. When they drift apart, you'll know immediately — instead of guessing at the end of the year.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Before you adopt, not after</h2>
+    <p class="subhead">Pick a species and breed from a hand-written reference of well-documented cost and health tendencies, and get a real first-year range before you commit.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h4>Pick the breed</h4>
+        <p>Brachycephalic, large/giant, long-spine, long-coat — Furecast knows which traits drive which costs.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h4>See the real range</h4>
+        <p>A low/expected/high first-year estimate, broken down into the specific risks behind the number — not a vague guess.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h4>Log & compare</h4>
+        <p>Once your pet's home, log real expenses and watch the predicted-vs-actual gap animate in real time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap blob-card">
+    <div class="jar-row">
+      <div class="jar-icon">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <rect x="18" y="30" width="64" height="58" rx="16" fill="#E3A23A" opacity="0.18"/>
+          <rect x="18" y="30" width="64" height="58" rx="16" fill="none" stroke="#E3A23A" stroke-width="3"/>
+          <rect x="30" y="16" width="40" height="16" rx="6" fill="#E3A23A"/>
+          <circle cx="42" cy="60" r="6" fill="#E3A23A"/>
+          <circle cx="58" cy="70" r="5" fill="#E3A23A"/>
+          <circle cx="50" cy="50" r="4" fill="#E3A23A"/>
+        </svg>
+      </div>
+      <div class="jar-text">
+        <h2>The surprise jar</h2>
+        <p>Furecast's prediction isn't a vague number — it's a set of specific, named risks. The surprise jar counts money only when you tag it against one of those exact predictions. Everyday food and litter never touch it.</p>
+        <span class="risk-chip">Brachycephalic airway surgery</span>
+        <span class="risk-chip">Hip dysplasia treatment</span>
+        <span class="risk-chip">IVDD back injury</span>
+        <p style="margin-top:14px;">If the jar stays empty, the warning didn't come true. If it fills, you'll know exactly which one did.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Simple pricing</h2>
+    <p class="subhead">Start free. Upgrade when you're ready to see the real numbers.</p>
+    <div class="pricing">
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price">$0</div>
+        <ul>
+          <li>Manual expense logging for one pet</li>
+          <li>Category breakdown</li>
+          <li>No breed prediction</li>
+        </ul>
+      </div>
+      <div class="price-card pro">
+        <h3>Furecast Pro</h3>
+        <div class="price">$3.99<span> / month</span></div>
+        <ul>
+          <li>Pre-adoption breed cost prediction</li>
+          <li>AI surprise-risk coaching</li>
+          <li>Surprise jar & predict-vs-actual reports</li>
+          <li>Unlimited pets</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Furecast is an iOS app. Predictions are planning estimates, not veterinary or financial advice.</p>
+    <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var field = document.getElementById('pawField');
+    var paw = '<svg viewBox="0 0 100 100" width="46" height="46"><ellipse cx="50" cy="64" rx="30" ry="20" fill="#4C7A52"/><ellipse cx="24" cy="30" rx="8" ry="10" fill="#4C7A52"/><ellipse cx="45" cy="22" rx="10" ry="12" fill="#4C7A52"/><ellipse cx="66" cy="22" rx="10" ry="12" fill="#4C7A52"/><ellipse cx="83" cy="30" rx="8" ry="10" fill="#4C7A52"/></svg>';
+    var positions = [
+      {top: '6%', left: '4%', r: '-14deg', delay: '0s'},
+      {top: '18%', left: '86%', r: '18deg', delay: '2s'},
+      {top: '60%', left: '2%', r: '10deg', delay: '4s'},
+      {top: '75%', left: '90%', r: '-8deg', delay: '1s'},
+      {top: '40%', left: '48%', r: '6deg', delay: '3s'}
+    ];
+    positions.forEach(function (p) {
+      var el = document.createElement('div');
+      el.innerHTML = paw;
+      el.style.position = 'absolute';
+      el.style.top = p.top;
+      el.style.left = p.left;
+      el.style.setProperty('--r', p.r);
+      el.style.animationDelay = p.delay;
+      field.appendChild(el);
+    });
+  })();
+</script>
+
+</body>
+</html>
