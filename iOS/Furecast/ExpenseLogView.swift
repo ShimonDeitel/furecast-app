@@ -50,6 +50,8 @@ struct ExpenseLogView: View {
                     }
                 }
             }
+            .dismissKeyboardOnTap()
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Log Expense")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

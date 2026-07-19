@@ -43,6 +43,17 @@ struct PawPanelButtonStyle: ButtonStyle {
 extension View {
     func prominentCoralButton() -> some View { buttonStyle(FilledCoralButtonStyle()) }
     func pawPanelButton() -> some View { buttonStyle(PawPanelButtonStyle()) }
+
+    /// Tap anywhere on this view to resign the first responder (dismiss the keyboard).
+    /// Uses `simultaneousGesture` rather than a plain `.gesture` so it never swallows taps
+    /// meant for buttons, pickers, or other controls inside the screen.
+    func dismissKeyboardOnTap() -> some View {
+        simultaneousGesture(
+            TapGesture().onEnded {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            }
+        )
+    }
 }
 
 /// A grouped "paw card" container used for every section on Home/Detail.

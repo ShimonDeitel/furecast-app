@@ -59,6 +59,8 @@ struct AddPetView: View {
                     predictionPreview(selectedBreed)
                 }
             }
+            .dismissKeyboardOnTap()
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Add a Pet")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
